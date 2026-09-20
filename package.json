@@ -1,7 +1,7 @@
 {
   "name": "mpvpaper-node",
-  "version": "0.1.0",
-  "description": "A new TypeScript project named mpvpaper-node",
+  "version": "0.1.1",
+  "description": "mpvpaper wrapper for nodejs",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
