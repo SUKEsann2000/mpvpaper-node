@@ -1,0 +1,16 @@
+src/
+test/
+tests/
+.github/
+.vscode/
+
+*.test.ts
+*.spec.ts
+tsconfig.json
+vitest.config.*
+eslint.config.*
+.prettierrc*
+.env
+.env.*
+*.log
+coverage/
