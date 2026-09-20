@@ -1,0 +1,27 @@
+{
+  "name": "mpvpaper-node",
+  "version": "0.1.0",
+  "description": "A new TypeScript project named mpvpaper-node",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --experimental-transform-types --test test/*.test.ts",
+    "start": "npm run build && node dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SUKEsann2000/mpvpaper-node.git"
+  },
+  "keywords": [],
+  "author": "SUKEsann2000",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/SUKEsann2000/mpvpaper-node/issues"
+  },
+  "homepage": "https://github.com/SUKEsann2000/mpvpaper-node#readme",
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "typescript": "^5.9.3"
+  }
+}
