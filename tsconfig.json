@@ -12,7 +12,9 @@
 
     "strict": true,
     "skipLibCheck": true,
-    "sourceMap": true,
+
+    "declaration": true,
+    "sourceMap": true
   },
-  "exclude": [ "test/" ]
+  "exclude": ["test/"]
 }
