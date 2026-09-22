@@ -12,6 +12,8 @@ export class MPVPaper {
     private readonly exitCallbacks = new Set<ExitCallback>();
     private readonly errorCallbacks = new Set<(err: Error) => void>();
 
+    private spawnPromise: Promise<void> | undefined;
+
     constructor(private options: InitializeOptions) {}
 
     private buildArgs(): string[] {
@@ -47,54 +49,47 @@ export class MPVPaper {
             return Promise.resolve();
         }
 
-        const args = this.buildArgs();
+        if (this.spawnPromise) {
+            return this.spawnPromise;
+        }
 
-        const stdioConfig: SpawnOptions["stdio"] =
-            this.options.stdin === false
-                ? ["ignore", "inherit", "inherit"]
-                : ["pipe", "inherit", "inherit"];
-
-        const child = spawn(
-            this.options.mpvpaper_path ?? "mpvpaper",
-            args,
-            {
-                stdio: stdioConfig,
-            },
-        );
-
-        return new Promise((resolve, reject) => {
-            let settled = false;
+        this.spawnPromise = new Promise((resolve, reject) => {
+            const child = spawn(
+                this.options.mpvpaper_path ?? "mpvpaper",
+                this.buildArgs(),
+                {
+                    stdio:
+                        this.options.stdin === false
+                            ? ["ignore", "inherit", "inherit"]
+                            : ["pipe", "inherit", "inherit"],
+                },
+            );
 
             child.once("error", (err) => {
-                // spawn() failed before the process was created.
                 if (this.mpvpaper === child) {
                     this.mpvpaper = undefined;
+                }
+
+                if (this.spawnPromise) {
+                    this.spawnPromise = undefined;
                 }
 
                 for (const callback of this.errorCallbacks) {
                     callback(err);
                 }
 
-                if (!settled) {
-                    settled = true;
-                    reject(err);
-                }
+                reject(err);
             });
 
             child.once("spawn", () => {
-                if (settled) return;
-
-                settled = true;
                 this.mpvpaper = child;
+
+                this.spawnPromise = undefined;
 
                 resolve();
             });
 
             child.once("exit", (code, signal) => {
-                // Only clear the current process reference.
-                //
-                // This check matters if another process has already
-                // been spawned after this child exited.
                 if (this.mpvpaper === child) {
                     this.mpvpaper = undefined;
                 }
@@ -104,6 +99,8 @@ export class MPVPaper {
                 }
             });
         });
+
+        return this.spawnPromise;
     }
 
     /**
@@ -128,8 +125,20 @@ export class MPVPaper {
     /**
      * Stops the mpvpaper process.
      */
-    public stop(): void {
-        this.mpvpaper?.kill();
+    public stop(): Promise<void> {
+        const child = this.mpvpaper;
+
+        if (!child) {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+            child.once("exit", () => {
+                resolve();
+            });
+
+            child.kill();
+        });
     }
 
     /**
